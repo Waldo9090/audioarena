@@ -5,7 +5,7 @@ import {
   Plus,
   Search,
   LayoutGrid,
-  FolderClosed,
+  FileText,
   BarChart3,
   ChevronsUpDown,
   PanelLeft,
@@ -15,10 +15,10 @@ import { Laurel } from '@/components/laurel'
 export type RecentDesign = { id: string; label: string }
 
 const navItems = [
-  { label: 'Search', icon: Search, href: '/' },
-  { label: 'Gallery', icon: LayoutGrid, href: '/about' },
-  { label: 'My Projects', icon: FolderClosed, href: '/' },
-  { label: 'Leaderboards', icon: BarChart3, href: '/about' },
+  { label: 'Arena', icon: Search, href: '/' },
+  { label: 'Models', icon: LayoutGrid, href: '/models' },
+  { label: 'Methodology', icon: FileText, href: '/methodology' },
+  { label: 'Leaderboard', icon: BarChart3, href: '/leaderboard' },
 ]
 
 export function Sidebar({
@@ -26,11 +26,13 @@ export function Sidebar({
   activeId = null,
   onNewProject,
   onSelectRecent,
+  userEmail,
 }: {
   recents?: RecentDesign[]
   activeId?: string | null
   onNewProject?: () => void
   onSelectRecent?: (id: string) => void
+  userEmail?: string
 }) {
   return (
     <aside className="hidden md:flex w-64 shrink-0 flex-col border-r border-border bg-sidebar">
@@ -72,7 +74,7 @@ export function Sidebar({
         <>
           <div className="px-5 pt-5 pb-2">
             <span className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
-              Recent Designs
+              Recent Prompts
             </span>
           </div>
           <div className="px-3 flex flex-col gap-0.5">
@@ -100,10 +102,10 @@ export function Sidebar({
           className="flex w-full items-center gap-3 rounded-md px-2 py-1.5 hover:bg-secondary transition-colors"
         >
           <span className="size-8 shrink-0 rounded-full bg-primary/20 flex items-center justify-center text-xs font-semibold text-primary">
-            AM
+            {userEmail ? userEmail.slice(0, 2).toUpperCase() : 'AA'}
           </span>
           <span className="flex-1 text-left text-sm font-medium text-foreground">
-            Aditya Mahna
+            {userEmail || 'AudioArena'}
           </span>
           <ChevronsUpDown size={15} className="text-muted-foreground" />
         </button>

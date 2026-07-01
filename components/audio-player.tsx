@@ -1,53 +1,60 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
-import { Play, Pause, Volume2, MoreVertical } from 'lucide-react'
+import { useRef, useState } from 'react'
+import { MoreVertical, Pause, Play, Volume2 } from 'lucide-react'
 
 function fmt(sec: number) {
+  if (!Number.isFinite(sec) || sec < 0) {
+    return '0:00'
+  }
+
   const m = Math.floor(sec / 60)
   const s = Math.floor(sec % 60)
   return `${m}:${s.toString().padStart(2, '0')}`
 }
 
-export function AudioPlayer({ duration }: { duration: number }) {
+export function AudioPlayer({ src }: { src: string }) {
+  const audioRef = useRef<HTMLAudioElement | null>(null)
   const [playing, setPlaying] = useState(false)
   const [pos, setPos] = useState(0)
-  const raf = useRef<number | null>(null)
-  const last = useRef<number>(0)
+  const [duration, setDuration] = useState(0)
 
-  useEffect(() => {
-    if (!playing) return
-    last.current = performance.now()
-    const tick = (now: number) => {
-      const dt = (now - last.current) / 1000
-      last.current = now
-      setPos((p) => {
-        const next = p + dt
-        if (next >= duration) {
-          setPlaying(false)
-          return duration
-        }
-        return next
-      })
-      raf.current = requestAnimationFrame(tick)
-    }
-    raf.current = requestAnimationFrame(tick)
-    return () => {
-      if (raf.current) cancelAnimationFrame(raf.current)
-    }
-  }, [playing, duration])
+  const toggle = async () => {
+    const audio = audioRef.current
+    if (!audio) return
 
-  const pct = Math.min(100, (pos / duration) * 100)
+    if (playing) {
+      audio.pause()
+      setPlaying(false)
+      return
+    }
+
+    if (audio.ended) {
+      audio.currentTime = 0
+    }
+
+    await audio.play()
+    setPlaying(true)
+  }
+
+  const pct = duration > 0 ? Math.min(100, (pos / duration) * 100) : 0
 
   return (
     <div className="flex items-center gap-3 rounded-full bg-secondary/70 px-2 py-2">
+      <audio
+        key={src}
+        ref={audioRef}
+        src={src}
+        preload="metadata"
+        onTimeUpdate={(event) => setPos(event.currentTarget.currentTime)}
+        onLoadedMetadata={(event) => setDuration(event.currentTarget.duration)}
+        onPause={() => setPlaying(false)}
+        onEnded={() => setPlaying(false)}
+      />
       <button
         type="button"
-        onClick={() => {
-          if (pos >= duration) setPos(0)
-          setPlaying((p) => !p)
-        }}
-        className="flex size-8 shrink-0 items-center justify-center rounded-full text-foreground hover:bg-background/60 transition-colors"
+        onClick={() => void toggle()}
+        className="flex size-8 shrink-0 items-center justify-center rounded-full text-foreground transition-colors hover:bg-background/60"
         aria-label={playing ? 'Pause' : 'Play'}
       >
         {playing ? <Pause size={16} /> : <Play size={16} />}

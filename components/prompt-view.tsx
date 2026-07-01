@@ -1,17 +1,26 @@
 'use client'
 
 import { useState } from 'react'
-import { ImagePlus, Zap, ChevronDown, ArrowRight } from 'lucide-react'
+import Link from 'next/link'
+import { ArrowRight, Lock, Mic2 } from 'lucide-react'
 import { Laurel } from '@/components/laurel'
 import { ModelChip } from '@/components/model-chip'
 import { models } from '@/lib/models'
 
-export function PromptView({ onSubmit }: { onSubmit: (prompt: string) => void }) {
+const MAX_TEXT_LENGTH = 1000
+
+export function PromptView({
+  onSubmit,
+  isLoggedIn,
+}: {
+  onSubmit: (prompt: string) => void
+  isLoggedIn: boolean
+}) {
   const [value, setValue] = useState('')
 
   const submit = () => {
     const text = value.trim()
-    if (!text) return
+    if (!text || !isLoggedIn || value.length > MAX_TEXT_LENGTH) return
     onSubmit(text)
   }
 
@@ -55,52 +64,64 @@ export function PromptView({ onSubmit }: { onSubmit: (prompt: string) => void })
           AudioArena
         </h1>
         <p className="mt-2 text-sm text-muted-foreground">
-          4.8M+ users
+          Blind rankings for text-to-speech models
         </p>
 
         <h2 className="mt-8 font-serif text-2xl text-foreground text-balance">
-          What are you creating today?
+          What should the models say?
         </h2>
+        <p className="mt-2 max-w-lg text-center text-sm leading-6 text-muted-foreground">
+          Type one prompt, listen to two anonymous voices, and vote for the better generation.
+        </p>
 
         <div className="mt-6 w-full rounded-2xl border border-border bg-card shadow-sm">
           <textarea
             value={value}
             onChange={(e) => setValue(e.target.value)}
             onKeyDown={handleKeyDown}
+            maxLength={MAX_TEXT_LENGTH + 200}
             rows={4}
-            placeholder="Describe what you want to design..."
+            aria-label="Text to synthesize"
+            placeholder="Type up to 1000 characters..."
             className="w-full resize-none bg-transparent px-4 pt-4 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none"
           />
           <div className="flex items-center justify-between px-3 pb-3">
             <div className="flex items-center gap-2">
-              <button
-                type="button"
-                className="flex size-8 items-center justify-center rounded-md text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors"
-                aria-label="Add image"
+              <span
+                className={`text-xs ${
+                  value.length > MAX_TEXT_LENGTH ? 'text-destructive' : 'text-muted-foreground'
+                }`}
               >
-                <ImagePlus size={18} />
-              </button>
-              <button
-                type="button"
-                className="flex items-center gap-1.5 rounded-md border border-border px-2.5 py-1.5 text-xs font-medium text-foreground/80 hover:bg-secondary transition-colors"
-              >
-                <Zap size={13} className="text-primary" />
-                PRO
-                <ChevronDown size={13} className="text-muted-foreground" />
-              </button>
+                {value.length}/{MAX_TEXT_LENGTH}
+              </span>
+              {!isLoggedIn && (
+                <span className="inline-flex items-center gap-1.5 rounded-md border border-border px-2.5 py-1.5 text-xs font-medium text-muted-foreground">
+                  <Lock size={13} />
+                  Login required
+                </span>
+              )}
             </div>
-            <button
-              type="button"
-              onClick={submit}
-              disabled={!value.trim()}
-              className="flex size-8 items-center justify-center rounded-full bg-primary text-primary-foreground transition-opacity hover:opacity-90 disabled:opacity-40"
-              aria-label="Submit prompt"
-            >
-              <ArrowRight size={16} />
-            </button>
+            {isLoggedIn ? (
+              <button
+                type="button"
+                onClick={submit}
+                disabled={!value.trim() || value.length > MAX_TEXT_LENGTH}
+                className="flex size-8 items-center justify-center rounded-full bg-primary text-primary-foreground transition-opacity hover:opacity-90 disabled:opacity-40"
+                aria-label="Generate battle"
+              >
+                <ArrowRight size={16} />
+              </button>
+            ) : (
+              <Link
+                href="/login"
+                className="inline-flex items-center gap-2 rounded-full bg-primary px-3 py-2 text-xs font-medium text-primary-foreground transition-opacity hover:opacity-90"
+              >
+                <Mic2 size={14} />
+                Login
+              </Link>
+            )}
           </div>
         </div>
-
       </div>
     </div>
   )

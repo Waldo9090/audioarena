@@ -4,6 +4,7 @@ import { Sidebar } from '@/components/sidebar'
 import { TopHeader } from '@/components/top-header'
 import { ModelChip } from '@/components/model-chip'
 import { models } from '@/lib/models'
+import { getCurrentUser } from '@/lib/supabase/server'
 
 const showcase = [
   { src: '/showcase-art.png', alt: 'Art studio landing page design' },
@@ -11,12 +12,24 @@ const showcase = [
   { src: '/showcase-nutrition.png', alt: 'Nutrition brand landing page design' },
 ]
 
-export default function AboutPage() {
+export const dynamic = 'force-dynamic'
+
+async function readUser() {
+  try {
+    return await getCurrentUser()
+  } catch {
+    return null
+  }
+}
+
+export default async function AboutPage() {
+  const user = await readUser()
+
   return (
     <div className="flex h-svh overflow-hidden bg-background">
-      <Sidebar />
+      <Sidebar userEmail={user?.email ?? undefined} />
       <div className="flex min-w-0 flex-1 flex-col">
-        <TopHeader />
+        <TopHeader isLoggedIn={Boolean(user)} />
         <main className="flex-1 overflow-y-auto">
           <section className="mx-auto grid max-w-6xl items-center gap-10 px-6 py-16 lg:grid-cols-2">
             <div>
@@ -26,14 +39,14 @@ export default function AboutPage() {
               <div className="mt-6 space-y-4 text-[15px] leading-relaxed text-foreground/80">
                 <p>
                   Audio Arena is the world&apos;s first crowdsourced benchmark
-                  for AI-generated audio. We give the same creative prompt to
-                  the top AI models, show you the results side by side, and let
-                  you vote on which one is best.
+                  for AI-generated speech. We give the same text prompt to two
+                  hidden TTS models, show you the audio side by side, and let
+                  you vote on which voice is best.
                 </p>
                 <p>
-                  Millions of votes from users in 190+ countries power the
-                  leaderboards that tell the industry which models actually have
-                  taste.
+                  Blind votes power the leaderboard that tells researchers,
+                  builders, and model companies which systems actually sound
+                  best to listeners.
                 </p>
               </div>
               <div className="mt-8 flex items-center gap-3">
@@ -43,12 +56,12 @@ export default function AboutPage() {
                 >
                   Get Started
                 </Link>
-                <button
-                  type="button"
+                <Link
+                  href="/leaderboard"
                   className="rounded-md border border-border bg-card px-4 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-secondary"
                 >
                   See Leaderboards
-                </button>
+                </Link>
               </div>
             </div>
 
@@ -75,11 +88,11 @@ export default function AboutPage() {
 
           <section className="mx-auto max-w-6xl px-6 py-12 text-center">
             <h2 className="font-serif text-3xl font-medium text-foreground text-balance">
-              Check out what our 4.8M+ users are making
+              Benchmarking the world&apos;s best voice models
             </h2>
             <p className="mt-3 text-sm text-muted-foreground">
-              Explore the most impressive apps built by AI models, created by
-              the community.
+              AudioArena keeps model identities hidden until after each vote,
+              then updates live Elo ratings from pairwise comparisons.
             </p>
 
             <div className="mt-10 grid gap-5 pb-16 sm:grid-cols-2 lg:grid-cols-3">
